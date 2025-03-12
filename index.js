@@ -14,13 +14,29 @@ app.get('/', async (req, res) => {
   async function run() {
     try {
       const database = await connectToDatabase();
+      res.json({status: "Server is running!"});
     } catch (error) {
       console.error('Error handling request:', error);
       res.status(500).json({error: 'Internal server error'});
     }
   }
   run().catch(console.dir);
-  res.json({status: "Server is running!"});
+});
+
+app.get('/menus/navbarItems', async (req, res) => {
+  async function run() {
+    try {
+      const database = await connectToDatabase();
+      const navbarItems = database.collection('navbar_items');
+      const cursor = navbarItems.find();
+      const result = await cursor.toArray()
+      res.json(result);
+    } catch (error) {
+      console.error('Error handling request:', error);
+      res.status(500).json({error: 'Internal server error'});
+    }
+  }
+  run().catch(console.dir);
 });
 
 // app.get('/', async (req, res) => {
