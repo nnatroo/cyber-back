@@ -38,7 +38,25 @@ app.get('/menus/navbarItems', async (req, res) => {
   }
   run().catch(console.dir);
 });
+app.get('/categories', async (req, res) => {
+  try {
+    const { categoryName } = req.query;
+    const database = await connectToDatabase();
+    const categoriesCollection = database.collection('categories');
 
+    let filter = {};
+    if (categoryName) {
+      filter = { category: categoryName };
+    }
+
+    const categories = await categoriesCollection.find(filter, { projection: { category: 1, ImageSrc: 1 } }).toArray();
+
+    res.json(categories);
+  } catch (err) {
+    console.error('Error handling request:', err);
+    res.status(500).send({ error: 'Internal server error' });
+  }
+});
 // app.get('/', async (req, res) => {
 //   async function run() {
 //     try {
