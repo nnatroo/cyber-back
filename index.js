@@ -40,42 +40,6 @@ app.get('/menus/navbarItems', async (req, res) => {
   run().catch(console.dir);
 });
 
-app.get('/categories', async (req, res) => {
-  try {
-    const { categoryName } = req.query;
-    const database = await connectToDatabase();
-    const categoriesCollection = database.collection('categories');
-
-    let filter = {};
-    if (categoryName) {
-      filter = { category: categoryName };
-    }
-
-    const categories = await categoriesCollection.find(filter, { projection: { category: 1, ImageSrc: 1 } }).toArray();
-
-    res.json(categories);
-  } catch (err) {
-    console.error('Error handling request:', err);
-    res.status(500).send({ error: 'Internal server error' });
-  }
-});
-
-app.get('/products/smartphones', async (req, res) => {
-  async function run() {
-    try {
-      const database = await connectToDatabase();
-      const productSmartphones = database.collection('productSmartphones');
-      const cursor = productSmartphones.find();
-      const result = await cursor.toArray()
-      res.json(result);
-    } catch (error) {
-      console.error('Error handling request:', error);
-      res.status(500).json({error: 'Internal server error'});
-    }
-  }
-
-  run().catch(console.dir);
-});
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
