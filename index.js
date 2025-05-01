@@ -77,7 +77,58 @@ app.get('/products/smartphones', async (req, res) => {
 
   run().catch(console.dir);
 });
+app.get('/products/releated', async (req, res) => {
+  async function run() {
+    try {
+      const database = await connectToDatabase();
+      const newArrival = database.collection('new_arrival');
+      const cursor = newArrival.find().limit(5);
+      const result = await cursor.toArray()
+
+      res.json(result);
+    } catch (error) {
+      console.error('Error handling request:', error);
+      res.status(500).json({error: 'Internal server error'});
+    }
+  }
+
+  run().catch(console.dir);
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+});
+app.get('/products/newArrival', async (req, res) => {
+  async function run() {
+    try {
+      const database = await connectToDatabase();
+      const newArrival = database.collection('new_arrival');
+      const cursor = newArrival.find();
+      const result = await cursor.toArray()
+
+      res.json(result);
+    } catch (error) {
+      console.error('Error handling request:', error);
+      res.status(500).json({error: 'Internal server error'});
+    }
+  }
+
+  run().catch(console.dir);
+});
+app.get('/products/discounts', async (req, res) => {
+  async function run() {
+    try {
+      const database = await connectToDatabase();
+      const discounts = database.collection('discounts');
+      const cursor = discounts.find();
+      const result = await cursor.toArray()
+
+      res.json(result);
+    } catch (error) {
+      console.error('Error handling request:', error);
+      res.status(500).json({error: 'Internal server error'});
+    }
+  }
+
+  run().catch(console.dir);
 });
