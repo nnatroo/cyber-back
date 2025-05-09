@@ -1,4 +1,5 @@
 import express from "express";
+import { ObjectId } from 'mongodb';
 import cors from "cors";
 import {connectToDatabase} from "./services/database.js";
 import bodyParser from "body-parser";
@@ -90,6 +91,34 @@ app.get('/products/newArrival', async (req, res) => {
     } catch (error) {
       console.error('Error handling request:', error);
       res.status(500).json({error: 'Internal server error'});
+    }
+  }
+
+  run().catch(console.dir);
+});
+
+app.get('/products/newArrival/:id', async (req, res) => {
+  const id = req.params.id;
+  async function run() {
+    try {
+      const database = await connectToDatabase();
+      const newArrival = database.collection('new_arrival');
+
+      // Ensure the ID is a valid ObjectId
+      if (!ObjectId.isValid(id)) {
+        return res.status(400).json({ error: 'Invalid product ID' });
+      }
+
+      const result = await newArrival.findOne({ _id: new ObjectId(id) });
+
+      if (!result) {
+        return res.status(404).json({ error: 'Product not found' });
+      }
+
+      res.json(result);
+    } catch (error) {
+      console.error('Error handling request:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
   }
 
