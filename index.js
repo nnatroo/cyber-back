@@ -12,6 +12,8 @@ app.use(cors());
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(express.static('public'))
 
+
+
 app.get('/', async (req, res) => {
   async function run() {
     try {
@@ -114,6 +116,28 @@ app.get('/products/discounts', async (req, res) => {
   run().catch(console.dir);
 });
 
+app.get('/products/phones', async (req, res) => {
+    try {
+        const db = await connectToDatabase();
+        const products = db.collection('products');
+        const data = await products.findOne({ name: 'Phones' });
+        res.json(data.Phone);
+    } catch (err) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+app.get('/products/Cameras', async (req, res) => {
+    try {
+        const db = await connectToDatabase();
+        const products = db.collection('products');
+        const data = await products.findOne({ name: 'cameras' });
+        res.json(data.cameras);
+    } catch (err) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
