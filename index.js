@@ -136,6 +136,16 @@ app.get('/products/Cameras', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+app.get('/products/Smart%20Watches', async (req, res) => {
+  try {
+    const db = await connectToDatabase();
+    const products = db.collection('products');
+    const data = await products.findOne({ name: 'watches' });
+    res.json(data.watches);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
