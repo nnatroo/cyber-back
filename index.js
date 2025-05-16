@@ -146,7 +146,36 @@ app.get('/products/Smart%20Watches', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
+app.get('/products/Headphones', async (req, res) => {
+  try {
+    const db = await connectToDatabase();
+    const products = db.collection('products');
+    const data = await products.findOne({ name: 'headphones' });
+    res.json(data.headphones);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+app.get('/products/Gaming', async (req, res) => {
+  try {
+    const db = await connectToDatabase();
+    const products = db.collection('products');
+    const data = await products.findOne({ name: 'gaming' });
+    res.json(data.gaming);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+app.get('/products/Computers', async (req, res) => {
+  try {
+    const db = await connectToDatabase();
+    const products = db.collection('products');
+    const data = await products.findOne({ name: 'Computers' });
+    res.json(data.Computers);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
