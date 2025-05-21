@@ -122,6 +122,17 @@ app.get('/products/:category', async (req, res) => {
   try {
     const db = await connectToDatabase();
     const products = db.collection('products');
+
+    if (category === 'all') {
+      const allData = await products.find().toArray();
+
+      const allItems = allData.flatMap(doc => {
+        return doc[doc.name] || [];
+      });
+
+      return res.json(allItems);
+    }
+
     const data = await products.findOne({ name: category });
 
     res.json(data[category] || []);
