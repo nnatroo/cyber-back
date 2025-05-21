@@ -115,7 +115,6 @@ app.get('/products/discounts', async (req, res) => {
 });
 
 app.post('/payment', async (req, res) => {try {
-    console.log('Received payment data:', req.body);
     const database = await connectToDatabase();
     const payment_info = database.collection('payment_info');
 
