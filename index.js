@@ -116,67 +116,20 @@ app.get('/products/discounts', async (req, res) => {
   run().catch(console.dir);
 });
 
-app.get('/products/phones', async (req, res) => {
-    try {
-        const db = await connectToDatabase();
-        const products = db.collection('products');
-        const data = await products.findOne({ name: 'Phones' });
-        res.json(data.Phone);
-    } catch (err) {
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-app.get('/products/Cameras', async (req, res) => {
-    try {
-        const db = await connectToDatabase();
-        const products = db.collection('products');
-        const data = await products.findOne({ name: 'cameras' });
-        res.json(data.cameras);
-    } catch (err) {
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-app.get('/products/Smart%20Watches', async (req, res) => {
+app.get('/products/:category', async (req, res) => {
+  const { category } = req.params;
+
   try {
     const db = await connectToDatabase();
     const products = db.collection('products');
-    const data = await products.findOne({ name: 'watches' });
-    res.json(data.watches);
+    const data = await products.findOne({ name: category });
+
+    res.json(data[category] || []);
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-app.get('/products/Headphones', async (req, res) => {
-  try {
-    const db = await connectToDatabase();
-    const products = db.collection('products');
-    const data = await products.findOne({ name: 'headphones' });
-    res.json(data.headphones);
-  } catch (err) {
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-app.get('/products/Gaming', async (req, res) => {
-  try {
-    const db = await connectToDatabase();
-    const products = db.collection('products');
-    const data = await products.findOne({ name: 'gaming' });
-    res.json(data.gaming);
-  } catch (err) {
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-app.get('/products/Computers', async (req, res) => {
-  try {
-    const db = await connectToDatabase();
-    const products = db.collection('products');
-    const data = await products.findOne({ name: 'Computers' });
-    res.json(data.Computers);
-  } catch (err) {
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-
