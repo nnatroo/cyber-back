@@ -179,7 +179,10 @@ app.get('/products/item/:name', async (req, res) => {
     for (const category of categories) {
       for (const key in category) {
         if (Array.isArray(category[key])) {
-          const match = category[key].find(p => p.name === productName);
+          const normalizedProductName = productName.trim().toLowerCase();
+          const match = category[key].find(p =>
+              p.name?.trim().toLowerCase() === normalizedProductName
+          );
           if (match) {
             foundProduct = match;
             break;
