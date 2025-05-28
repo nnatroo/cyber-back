@@ -114,28 +114,50 @@ app.get('/products/discounts', async (req, res) => {
   run().catch(console.dir);
 });
 
+app.get('/products/:category', async (req, res) => {
+  const { category } = req.params;
+
+  try {
+    const db = await connectToDatabase();
+    const products = db.collection('products');
+
+    if (category === 'all') {
+      const allData = await products.find().toArray();
+
+      const allItems = allData.flatMap(doc => {
+        return doc[doc.name] || [];
+      });
+
+      return res.json(allItems);
+    }
+
+    const data = await products.findOne({ name: category });
+
+    res.json(data[category] || []);
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.post('/payment', async (req, res) => {try {
     const database = await connectToDatabase();
     const payment_info = database.collection('payment_info');
 
     const doc = {
-      cardName: req.body.cardName,
-      cardNumber: req.body.cardNumber,
-      cvv: req.body.cvv,
-      expDate: req.body.expDate,
-      createdAt: new Date(),
+        cardName: req.body.cardName,
+        cardNumber: req.body.cardNumber,
+        cvv: req.body.cvv,
+        expDate: req.body.expDate,
+        createdAt: new Date(),
     };
 
     const result = await payment_info.insertOne(doc);
     res.json({ message: 'Payment saved', id: result.insertedId });
-  } catch (error) {
+} catch (error) {
     console.error('Error handling request:', error);
     res.status(500).json({ error: 'Internal server error' });
-  }
+}
 });
-
-
-
 
 
 app.listen(PORT, () => {
