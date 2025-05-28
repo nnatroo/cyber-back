@@ -12,8 +12,6 @@ app.use(cors());
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(express.static('public'))
 
-
-
 app.get('/', async (req, res) => {
   async function run() {
     try {
@@ -140,6 +138,27 @@ app.get('/products/:category', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+app.post('/payment', async (req, res) => {try {
+    const database = await connectToDatabase();
+    const payment_info = database.collection('payment_info');
+
+    const doc = {
+        cardName: req.body.cardName,
+        cardNumber: req.body.cardNumber,
+        cvv: req.body.cvv,
+        expDate: req.body.expDate,
+        createdAt: new Date(),
+    };
+
+    const result = await payment_info.insertOne(doc);
+    res.json({ message: 'Payment saved', id: result.insertedId });
+} catch (error) {
+    console.error('Error handling request:', error);
+    res.status(500).json({ error: 'Internal server error' });
+}
+});
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
