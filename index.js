@@ -82,42 +82,87 @@ app.get('/products/smartphones', async (req, res) => {
 
 app.get('/products/newArrival', async (req, res) => {
   try {
-    const database = await connectToDatabase();
-    const categories = await database.collection('products').find({}).toArray();
+    const db = await connectToDatabase();
+    const collection = db.collection('products');
 
-    let newArrivals = [];
-
-    for (const category of categories) {
-      const arrayKey = Object.keys(category).find(key => Array.isArray(category[key]));
-      const products = category[arrayKey] || [];
-
-      newArrivals.push(...products.filter(p => p.isNewArrival));
-    }
+    const newArrivals = await collection.aggregate([
+      {
+        $project: {
+          arrayField: {
+            $objectToArray: "$$ROOT"
+          }
+        }
+      },
+      {
+        $unwind: "$arrayField"
+      },
+      {
+        $match: {
+          "arrayField.v": { $type: "array" }
+        }
+      },
+      {
+        $unwind: "$arrayField.v"
+      },
+      {
+        $match: {
+          "arrayField.v.isNewArrival": true
+        }
+      },
+      {
+        $replaceRoot: {
+          newRoot: "$arrayField.v"
+        }
+      }
+    ]).toArray();
 
     res.json(newArrivals);
-  } catch (error) {
-    console.error("Error fetching new arrivals:", error);
+  } catch (err) {
+    console.error("Error fetching new arrivals:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
+
 app.get('/products/discounts', async (req, res) => {
   try {
-    const database = await connectToDatabase();
-    const categories = await database.collection('products').find({}).toArray();
+    const db = await connectToDatabase();
+    const collection = db.collection('products');
 
-    let discounts = [];
-
-    for (const category of categories) {
-      const arrayKey = Object.keys(category).find(key => Array.isArray(category[key]));
-      const products = category[arrayKey] || [];
-
-      discounts.push(...products.filter(p => p.isDiscounted));
-    }
+    const discounts = await collection.aggregate([
+      {
+        $project: {
+          arrayField: {
+            $objectToArray: "$$ROOT"
+          }
+        }
+      },
+      {
+        $unwind: "$arrayField"
+      },
+      {
+        $match: {
+          "arrayField.v": { $type: "array" }
+        }
+      },
+      {
+        $unwind: "$arrayField.v"
+      },
+      {
+        $match: {
+          "arrayField.v.isDiscounted": true
+        }
+      },
+      {
+        $replaceRoot: {
+          newRoot: "$arrayField.v"
+        }
+      }
+    ]).toArray();
 
     res.json(discounts);
-  } catch (error) {
-    console.error("Error fetching discounted products:", error);
+  } catch (err) {
+    console.error("Error fetching discounts:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -125,21 +170,43 @@ app.get('/products/discounts', async (req, res) => {
 
 app.get('/products/related', async (req, res) => {
   try {
-    const database = await connectToDatabase();
-    const categories = await database.collection('products').find({}).toArray();
+    const db = await connectToDatabase();
+    const collection = db.collection('products');
 
-    let related = [];
-
-    for (const category of categories) {
-      const arrayKey = Object.keys(category).find(key => Array.isArray(category[key]));
-      const products = category[arrayKey] || [];
-
-      related.push(...products.filter(p => p.isRelated));
-    }
+    const related = await collection.aggregate([
+      {
+        $project: {
+          arrayField: {
+            $objectToArray: "$$ROOT"
+          }
+        }
+      },
+      {
+        $unwind: "$arrayField"
+      },
+      {
+        $match: {
+          "arrayField.v": { $type: "array" }
+        }
+      },
+      {
+        $unwind: "$arrayField.v"
+      },
+      {
+        $match: {
+          "arrayField.v.isRelated": true
+        }
+      },
+      {
+        $replaceRoot: {
+          newRoot: "$arrayField.v"
+        }
+      }
+    ]).toArray();
 
     res.json(related);
-  } catch (error) {
-    console.error("Error fetching related products:", error);
+  } catch (err) {
+    console.error("Error fetching related products:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -149,22 +216,57 @@ app.get('/products/item/:name', async (req, res) => {
   const productName = decodeURIComponent(req.params.name).trim().toLowerCase();
 
   try {
-    const database = await connectToDatabase();
-    const categories = await database.collection('products').find({}).toArray();
+    const db = await connectToDatabase();
+    const collection = db.collection('products');
 
-    for (const category of categories) {
-      const arrayKey = Object.keys(category).find(key => Array.isArray(category[key]));
-      const products = category[arrayKey] || [];
-
-      const match = products.find(p => p.name?.trim().toLowerCase() === productName);
-      if (match) {
-        return res.json(match);
+    const match = await collection.aggregate([
+      {
+        $project: {
+          arrayField: {
+            $objectToArray: "$$ROOT"
+          }
+        }
+      },
+      {
+        $unwind: "$arrayField"
+      },
+      {
+        $match: {
+          "arrayField.v": { $type: "array" }
+        }
+      },
+      {
+        $unwind: "$arrayField.v"
+      },
+      {
+        $addFields: {
+          productNameLower: {
+            $toLower: { $trim: { input: "$arrayField.v.name" } }
+          }
+        }
+      },
+      {
+        $match: {
+          productNameLower: productName
+        }
+      },
+      {
+        $replaceRoot: {
+          newRoot: "$arrayField.v"
+        }
+      },
+      {
+        $limit: 1
       }
-    }
+    ]).toArray();
 
-    res.status(404).json({ error: "Product not found" });
-  } catch (error) {
-    console.error("Error fetching product:", error);
+    if (match.length > 0) {
+      res.json(match[0]);
+    } else {
+      res.status(404).json({ error: "Product not found" });
+    }
+  } catch (err) {
+    console.error("Error fetching product:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
