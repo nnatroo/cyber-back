@@ -43,20 +43,19 @@ app.get('/menus/navbarItems', async (req, res) => {
 
 app.get('/categories', async (req, res) => {
   try {
-    const { categoryName } = req.query;
     const database = await connectToDatabase();
     const categoriesCollection = database.collection('test_data');
+    const topCategories = await categoriesCollection.aggregate([
+      { $match: { categoryName: { $ne: null } } },
+      { $group: { _id: "$categoryName", itemCount: { $sum: 1 } } },
+      { $sort: { itemCount: -1 } },
+      { $limit: 6 },
+      { $project: { categoryName: "$_id", itemCount: 1, _id: 0 } }
+    ]).toArray();
+    res.json(topCategories);
 
-    let filter = {};
-    if (categoryName) {
-      filter = { category: categoryName };
-    }
-
-    const categories = await categoriesCollection.find(filter, { projection: { category: 1, ImageSrc: 1 } }).toArray();
-
-    res.json(categories);
   } catch (err) {
-    console.error('Error handling request:', err);
+    console.error('Error fetching top categories:', err);
     res.status(500).send({ error: 'Internal server error' });
   }
 });
@@ -116,6 +115,7 @@ app.get('/products/discounts', async (req, res) => {
 
 app.get('/products/:category', async (req, res) => {
   const { category } = req.params;
+  console.log(category)
 
   try {
     const db = await connectToDatabase();
@@ -123,17 +123,12 @@ app.get('/products/:category', async (req, res) => {
 
     if (category === 'all') {
       const allData = await products.find().toArray();
-
-      const allItems = allData.flatMap(doc => {
-        return doc[doc.name] || [];
-      });
-
-      return res.json(allItems);
+        return res.json(allData);
     }
 
-    const data = await products.findOne({ name: category });
-
-    res.json(data[category] || []);
+    const data = await products.find({ categoryName: category }).toArray();
+    console.log(data)
+    res.json(data);
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
   }
