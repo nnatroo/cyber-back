@@ -45,7 +45,7 @@ app.get('/categories', async (req, res) => {
   try {
     const { categoryName } = req.query;
     const database = await connectToDatabase();
-    const categoriesCollection = database.collection('categories');
+    const categoriesCollection = database.collection('test_data');
 
     let filter = {};
     if (categoryName) {
@@ -119,7 +119,7 @@ app.get('/products/:category', async (req, res) => {
 
   try {
     const db = await connectToDatabase();
-    const products = db.collection('products');
+    const products = db.collection('test_data');
 
     if (category === 'all') {
       const allData = await products.find().toArray();
