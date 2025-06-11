@@ -81,8 +81,8 @@ app.get('/products/newArrival', async (req, res) => {
   async function run() {
     try {
       const database = await connectToDatabase();
-      const newArrival = database.collection('new_arrival');
-      const cursor = newArrival.find();
+      const newArrival = database.collection('test_data');
+      const cursor = newArrival.find({isNewArrival : true});
       const result = await cursor.toArray()
 
       res.json(result);
@@ -99,8 +99,8 @@ app.get('/products/discounts', async (req, res) => {
   async function run() {
     try {
       const database = await connectToDatabase();
-      const discounts = database.collection('discounts');
-      const cursor = discounts.find();
+      const discounts = database.collection('test_data');
+      const cursor = discounts.find({ discount: true });
       const result = await cursor.toArray()
 
       res.json(result);
