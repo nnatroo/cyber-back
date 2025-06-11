@@ -12,8 +12,6 @@ app.use(cors());
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(express.static('public'))
 
-
-
 app.get('/', async (req, res) => {
   async function run() {
     try {
@@ -67,7 +65,7 @@ app.get('/products/smartphones', async (req, res) => {
   async function run() {
     try {
       const database = await connectToDatabase();
-        const productSmartphones = database.collection('productSmartphones');
+      const productSmartphones = database.collection('productSmartphones');
       const cursor = productSmartphones.find();
       const result = await cursor.toArray()
       res.json(result);
@@ -272,67 +270,52 @@ app.get('/products/item/:name', async (req, res) => {
 });
 
 
-app.get('/products/phones', async (req, res) => {
-    try {
-        const db = await connectToDatabase();
-        const products = db.collection('products');
-        const data = await products.findOne({ name: 'Phones' });
-        res.json(data.Phone);
-    } catch (err) {
-        res.status(500).json({ error: 'Internal server error' });
+app.get('/products/:category', async (req, res) => {
+  const { category } = req.params;
+
+  try {
+    const db = await connectToDatabase();
+    const products = db.collection('products');
+
+    if (category === 'all') {
+      const allData = await products.find().toArray();
+
+      const allItems = allData.flatMap(doc => {
+        return doc[doc.name] || [];
+      });
+
+      return res.json(allItems);
     }
-});
-app.get('/products/Cameras', async (req, res) => {
-    try {
-        const db = await connectToDatabase();
-        const products = db.collection('products');
-        const data = await products.findOne({ name: 'cameras' });
-        res.json(data.cameras);
-    } catch (err) {
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-app.get('/products/Smart%20Watches', async (req, res) => {
-  try {
-    const db = await connectToDatabase();
-    const products = db.collection('products');
-    const data = await products.findOne({ name: 'watches' });
-    res.json(data.watches);
+
+    const data = await products.findOne({ name: category });
+
+    res.json(data[category] || []);
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-app.get('/products/Headphones', async (req, res) => {
-  try {
-    const db = await connectToDatabase();
-    const products = db.collection('products');
-    const data = await products.findOne({ name: 'headphones' });
-    res.json(data.headphones);
-  } catch (err) {
+
+app.post('/payment', async (req, res) => {try {
+    const database = await connectToDatabase();
+    const payment_info = database.collection('payment_info');
+
+    const doc = {
+        cardName: req.body.cardName,
+        cardNumber: req.body.cardNumber,
+        cvv: req.body.cvv,
+        expDate: req.body.expDate,
+        createdAt: new Date(),
+    };
+
+    const result = await payment_info.insertOne(doc);
+    res.json({ message: 'Payment saved', id: result.insertedId });
+} catch (error) {
+    console.error('Error handling request:', error);
     res.status(500).json({ error: 'Internal server error' });
-  }
+}
 });
-app.get('/products/Gaming', async (req, res) => {
-  try {
-    const db = await connectToDatabase();
-    const products = db.collection('products');
-    const data = await products.findOne({ name: 'gaming' });
-    res.json(data.gaming);
-  } catch (err) {
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-app.get('/products/Computers', async (req, res) => {
-  try {
-    const db = await connectToDatabase();
-    const products = db.collection('products');
-    const data = await products.findOne({ name: 'Computers' });
-    res.json(data.Computers);
-  } catch (err) {
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-
