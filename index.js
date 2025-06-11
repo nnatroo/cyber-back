@@ -115,7 +115,6 @@ app.get('/products/discounts', async (req, res) => {
 
 app.get('/products/:category', async (req, res) => {
   const { category } = req.params;
-  console.log(category)
 
   try {
     const db = await connectToDatabase();
@@ -127,7 +126,6 @@ app.get('/products/:category', async (req, res) => {
     }
 
     const data = await products.find({ categoryName: category }).toArray();
-    console.log(data)
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
