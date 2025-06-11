@@ -81,38 +81,9 @@ app.get('/products/smartphones', async (req, res) => {
 app.get('/products/newArrival', async (req, res) => {
   try {
     const db = await connectToDatabase();
-    const collection = db.collection('products');
+    const collection = db.collection('test_data');
 
-    const newArrivals = await collection.aggregate([
-      {
-        $project: {
-          arrayField: {
-            $objectToArray: "$$ROOT"
-          }
-        }
-      },
-      {
-        $unwind: "$arrayField"
-      },
-      {
-        $match: {
-          "arrayField.v": { $type: "array" }
-        }
-      },
-      {
-        $unwind: "$arrayField.v"
-      },
-      {
-        $match: {
-          "arrayField.v.isNewArrival": true
-        }
-      },
-      {
-        $replaceRoot: {
-          newRoot: "$arrayField.v"
-        }
-      }
-    ]).toArray();
+    const newArrivals = await collection.find({ isNewArrival: true }).toArray();
 
     res.json(newArrivals);
   } catch (err) {
@@ -125,42 +96,13 @@ app.get('/products/newArrival', async (req, res) => {
 app.get('/products/discounts', async (req, res) => {
   try {
     const db = await connectToDatabase();
-    const collection = db.collection('products');
+    const collection = db.collection('test_data');
 
-    const discounts = await collection.aggregate([
-      {
-        $project: {
-          arrayField: {
-            $objectToArray: "$$ROOT"
-          }
-        }
-      },
-      {
-        $unwind: "$arrayField"
-      },
-      {
-        $match: {
-          "arrayField.v": { $type: "array" }
-        }
-      },
-      {
-        $unwind: "$arrayField.v"
-      },
-      {
-        $match: {
-          "arrayField.v.isDiscounted": true
-        }
-      },
-      {
-        $replaceRoot: {
-          newRoot: "$arrayField.v"
-        }
-      }
-    ]).toArray();
+    const discounts = await collection.find({ isDiscounted: true }).toArray();
 
     res.json(discounts);
   } catch (err) {
-    console.error("Error fetching discounts:", err);
+    console.error("Error fetching new arrivals:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -169,102 +111,33 @@ app.get('/products/discounts', async (req, res) => {
 app.get('/products/related', async (req, res) => {
   try {
     const db = await connectToDatabase();
-    const collection = db.collection('products');
+    const collection = db.collection('test_data');
 
-    const related = await collection.aggregate([
-      {
-        $project: {
-          arrayField: {
-            $objectToArray: "$$ROOT"
-          }
-        }
-      },
-      {
-        $unwind: "$arrayField"
-      },
-      {
-        $match: {
-          "arrayField.v": { $type: "array" }
-        }
-      },
-      {
-        $unwind: "$arrayField.v"
-      },
-      {
-        $match: {
-          "arrayField.v.isRelated": true
-        }
-      },
-      {
-        $replaceRoot: {
-          newRoot: "$arrayField.v"
-        }
-      }
-    ]).toArray();
+      const discounts = await collection.find({ isRelated: true }).toArray();
 
-    res.json(related);
+    res.json(discounts);
   } catch (err) {
-    console.error("Error fetching related products:", err);
+    console.error("Error fetching new arrivals:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
 
-app.get('/products/item/:name', async (req, res) => {
-  const productName = decodeURIComponent(req.params.name).trim().toLowerCase();
-
+app.get('/products/item/id/:id', async (req, res) => {
+  const id = parseInt(req.params.id, 10);
   try {
     const db = await connectToDatabase();
-    const collection = db.collection('products');
+    const collection = db.collection('test_data');
 
-    const match = await collection.aggregate([
-      {
-        $project: {
-          arrayField: {
-            $objectToArray: "$$ROOT"
-          }
-        }
-      },
-      {
-        $unwind: "$arrayField"
-      },
-      {
-        $match: {
-          "arrayField.v": { $type: "array" }
-        }
-      },
-      {
-        $unwind: "$arrayField.v"
-      },
-      {
-        $addFields: {
-          productNameLower: {
-            $toLower: { $trim: { input: "$arrayField.v.name" } }
-          }
-        }
-      },
-      {
-        $match: {
-          productNameLower: productName
-        }
-      },
-      {
-        $replaceRoot: {
-          newRoot: "$arrayField.v"
-        }
-      },
-      {
-        $limit: 1
-      }
-    ]).toArray();
+    const product = await collection.findOne({ id: id });
 
-    if (match.length > 0) {
-      res.json(match[0]);
+    if (product) {
+      res.json(product);
     } else {
       res.status(404).json({ error: "Product not found" });
     }
   } catch (err) {
-    console.error("Error fetching product:", err);
+    console.error("Error fetching product by ID:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
