@@ -61,6 +61,7 @@ app.get('/categories', async (req, res) => {
         let result = Object.keys(categoriesObj).map(function (key) {
             return categoriesObj[key];
         });
+        console.log(result)
         res.json(result);
     } catch (err) {
         console.error('Error fetching top categories:', err);
@@ -68,22 +69,7 @@ app.get('/categories', async (req, res) => {
     }
 });
 
-app.get('/products/smartphones', async (req, res) => {
-    async function run() {
-        try {
-            const database = await connectToDatabase();
-            const productSmartphones = database.collection('productSmartphones');
-            const cursor = productSmartphones.find();
-            const result = await cursor.toArray()
-            res.json(result);
-        } catch (error) {
-            console.error('Error handling request:', error);
-            res.status(500).json({error: 'Internal server error'});
-        }
-    }
 
-    run().catch(console.dir);
-});
 
 app.get('/products/newArrival', async (req, res) => {
     async function run() {
@@ -122,19 +108,23 @@ app.get('/products/discounts', async (req, res) => {
 });
 
 app.get('/products/:category', async (req, res) => {
-    const {category} = req.params;
+    const category = req.params.category;
+    console.log(req.params)
 
     try {
         const db = await connectToDatabase();
         const products = db.collection('test_data');
 
+
         if (category === 'all') {
             const allData = await products.find().toArray();
             return res.json(allData);
         }
-
-        const data = await products.find({categoryName: category}).toArray();
-        res.json(data);
+        if (category !== 'all'){
+            const numbCategory = Number(category);
+            const data = await products.find({parentCategoryId: numbCategory}).toArray();
+            res.json(data);
+        }
     } catch (err) {
         res.status(500).json({error: 'Internal server error'});
     }
