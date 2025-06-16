@@ -79,40 +79,69 @@ app.get('/products/smartphones', async (req, res) => {
 });
 
 app.get('/products/newArrival', async (req, res) => {
-  async function run() {
-    try {
-      const database = await connectToDatabase();
-      const newArrival = database.collection('new_arrival');
-      const cursor = newArrival.find();
-      const result = await cursor.toArray()
+  try {
+    const db = await connectToDatabase();
+    const collection = db.collection('test_data');
 
-      res.json(result);
-    } catch (error) {
-      console.error('Error handling request:', error);
-      res.status(500).json({error: 'Internal server error'});
-    }
+    const newArrivals = await collection.find({ isNewArrival: true }).toArray();
+
+    res.json(newArrivals);
+  } catch (err) {
+    console.error("Error fetching new arrivals:", err);
+    res.status(500).json({ error: "Internal server error" });
   }
-
-  run().catch(console.dir);
 });
+
 
 app.get('/products/discounts', async (req, res) => {
-  async function run() {
-    try {
-      const database = await connectToDatabase();
-      const discounts = database.collection('discounts');
-      const cursor = discounts.find();
-      const result = await cursor.toArray()
+  try {
+    const db = await connectToDatabase();
+    const collection = db.collection('test_data');
 
-      res.json(result);
-    } catch (error) {
-      console.error('Error handling request:', error);
-      res.status(500).json({error: 'Internal server error'});
-    }
+    const discounts = await collection.find({ isDiscounted: true }).toArray();
+
+    res.json(discounts);
+  } catch (err) {
+    console.error("Error fetching new arrivals:", err);
+    res.status(500).json({ error: "Internal server error" });
   }
-
-  run().catch(console.dir);
 });
+
+
+app.get('/products/related', async (req, res) => {
+  try {
+    const db = await connectToDatabase();
+    const collection = db.collection('test_data');
+
+      const discounts = await collection.find({ isRelated: true }).toArray();
+
+    res.json(discounts);
+  } catch (err) {
+    console.error("Error fetching new arrivals:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
+app.get('/products/item/:itemId', async (req, res) => {
+  const id = parseInt(req.params.itemId, 10);
+  try {
+    const db = await connectToDatabase();
+    const collection = db.collection('test_data');
+
+    const product = await collection.findOne({ id: id });
+
+    if (product) {
+      res.json(product);
+    } else {
+      res.status(404).json({ error: "Product not found" });
+    }
+  } catch (err) {
+    console.error("Error fetching product by ID:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 
 app.get('/products/:category', async (req, res) => {
   const { category } = req.params;
