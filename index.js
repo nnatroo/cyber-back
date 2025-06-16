@@ -123,8 +123,8 @@ app.get('/products/related', async (req, res) => {
 });
 
 
-app.get('/products/item/id/:id', async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+app.get('/products/item/:itemId', async (req, res) => {
+  const id = parseInt(req.params.itemId, 10);
   try {
     const db = await connectToDatabase();
     const collection = db.collection('test_data');
